@@ -1,0 +1,15 @@
+Source: steamer
+Section: utils
+Priority: extra
+Maintainer: Zang MingJie <zealot0630@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), dh-autoreconf,
+ autoconf-archive
+Standards-Version: 3.9.4
+Homepage: https://github.com/kghost/steamer
+Vcs-Git: git://github.com/kghost/steamer.git
+
+Package: steamer
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: steamer
+ steamer
