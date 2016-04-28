@@ -1,6 +1,8 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+#include "config.h"
+
 #include <string>
 #include <sstream>
 #include <memory>
@@ -32,7 +34,10 @@ class Logger {
 			for (;;) {
 				auto &n = q.front();
 				if (!n->completed) break;
-				std::cerr << std::put_time(std::localtime(&n->t), "%F %T ") << n->level << n->ss.str() << std::endl;
+				auto t = std::localtime(&n->t);
+				char s[200];
+				::snprintf(s, sizeof(s), "%02d-%02d-%02d %02d/%02d/%02d %+04d", t->tm_year % 100, t->tm_mon, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, t->tm_isdst);
+				std::cerr << s << n->level << n->ss.str() << std::endl;
 				q.pop();
 			}
 		}
