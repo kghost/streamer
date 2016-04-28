@@ -8,7 +8,11 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#if defined(HAVE_BOOST_LOG)
 #include <boost/log/trivial.hpp>
+#else
+#include "logger.hpp"
+#endif
 
 #include "error-code.hpp"
 
@@ -94,22 +98,21 @@ class port : public std::enable_shared_from_this<port> {
 		};
 
 		std::shared_ptr<fs::ofstream> rotate(boost::asio::ip::udp::endpoint peer) {
-			auto prefix = fs::path(working) /= boost::lexical_cast<std::string>(peer) += ".";
 			gh::error_code ec;
-			auto file = fs::path(prefix) += boost::lexical_cast<std::string>(file_max_rotate);
+			auto file = working / (boost::lexical_cast<std::string>(peer) + "." + boost::lexical_cast<std::string>(file_max_rotate));
 			if (fs::exists(file)) {
 				fs::remove(file, ec);
 				if (!ec) BOOST_LOG_TRIVIAL(warning) << "Rotate delete file " << file << " failed: " << ec.message();
 			}
 			for (size_t n = file_max_rotate - 1; n > 0; --n) {
-				auto oldf = fs::path(prefix) += boost::lexical_cast<std::string>(n);
+				auto oldf = working / (boost::lexical_cast<std::string>(peer) + "." + boost::lexical_cast<std::string>(n));
 				if (fs::exists(oldf)) {
-					fs::rename(oldf, fs::path(prefix) += boost::lexical_cast<std::string>(n+1), ec);
+					fs::rename(oldf, working / (boost::lexical_cast<std::string>(peer) + "." + boost::lexical_cast<std::string>(n+1)), ec);
 					if (!ec) BOOST_LOG_TRIVIAL(warning) << "Rotate rename file " << oldf << " failed: " << ec.message();
 				}
 			}
 			auto fp = std::make_shared<fs::ofstream>();
-			fp->open(prefix += "1", std::ios_base::trunc);
+			fp->open(working / (boost::lexical_cast<std::string>(peer) + "." + "1"), std::ios_base::trunc);
 			pcap_hdr hdr { 0xd4c3b2a1, ntohs(2), ntohs(4), 0, 0, ntohl(65535), ntohl(228) /* LINKTYPE_IPV4 */ };
 			fp->write(reinterpret_cast<char*>(&hdr), sizeof(hdr));
 			return fp;
@@ -205,7 +208,7 @@ int main (int ac, char **av) {
 			if (!ec) {
 				for (decltype(iterator) iend; iterator != iend; ++iterator) {
 					BOOST_LOG_TRIVIAL(info) << "Listining on port: " << iterator->endpoint() << " from " << end;
-					std::make_shared<port>(io_service, std::move(fs::path(working) /= end))->start(iterator->endpoint());
+					std::make_shared<port>(io_service, working / end)->start(iterator->endpoint());
 				}
 			} else {
 				BOOST_LOG_TRIVIAL(error) << "Error resolve endpoint(" << end << "): " << ec.message();
@@ -222,7 +225,9 @@ int main (int ac, char **av) {
 
 	io_service.run();
 
+#if defined(HAVE_BOOST_LOG)
 	boost::log::core::get()->remove_all_sinks();
+#endif
 
 	return 0;
 }
