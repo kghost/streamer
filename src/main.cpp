@@ -102,13 +102,13 @@ class port : public std::enable_shared_from_this<port> {
 			auto file = working / (boost::lexical_cast<std::string>(peer) + "." + boost::lexical_cast<std::string>(file_max_rotate));
 			if (fs::exists(file)) {
 				fs::remove(file, ec);
-				if (!ec) BOOST_LOG_TRIVIAL(warning) << "Rotate delete file " << file << " failed: " << ec.message();
+				if (ec) BOOST_LOG_TRIVIAL(warning) << "Rotate delete file " << file << " failed: " << ec.message();
 			}
 			for (size_t n = file_max_rotate - 1; n > 0; --n) {
 				auto oldf = working / (boost::lexical_cast<std::string>(peer) + "." + boost::lexical_cast<std::string>(n));
 				if (fs::exists(oldf)) {
 					fs::rename(oldf, working / (boost::lexical_cast<std::string>(peer) + "." + boost::lexical_cast<std::string>(n+1)), ec);
-					if (!ec) BOOST_LOG_TRIVIAL(warning) << "Rotate rename file " << oldf << " failed: " << ec.message();
+					if (ec) BOOST_LOG_TRIVIAL(warning) << "Rotate rename file " << oldf << " failed: " << ec.message();
 				}
 			}
 			auto fp = std::make_shared<fs::ofstream>();
