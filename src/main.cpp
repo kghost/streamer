@@ -45,6 +45,8 @@ class port : public std::enable_shared_from_this<port> {
 
 			try {
 				socket.open(endpoint.protocol());
+				if (endpoint.protocol().family() == AF_INET6)
+					socket.set_option(boost::asio::ip::v6_only(true));
 				socket.bind(endpoint);
 			} catch (const gh::system_error &e) {
 				BOOST_LOG_TRIVIAL(error) << "endpiont " << endpoint << " start failed: " << e.what();
