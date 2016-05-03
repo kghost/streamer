@@ -141,8 +141,8 @@ class port : public std::enable_shared_from_this<port> {
 						::gettimeofday(&tv, nullptr);
 						entry e = {
 							{ ntohl(tv.tv_sec), ntohl(tv.tv_usec), ntohl(sizeof(iphdr) + sizeof(udphdr) + bytes_transferred), ntohl(sizeof(iphdr) + sizeof(udphdr) + bytes_transferred) },
-							{ 0x45, 0, 0, 0, 0, 0, 17, 0, ntohl(me->socket.local_endpoint().address().to_v4().to_ulong()), ntohl(peer->address().to_v4().to_ulong()) },
-							{ ntohs(me->socket.local_endpoint().port()), ntohs(peer->port()), ntohs(sizeof(udphdr) + bytes_transferred), 0 }
+							{ 0x45, 0, 0, 0, 0, 0, 17, 0, ntohl(peer->address().to_v4().to_ulong()), ntohl(me->socket.local_endpoint().address().to_v4().to_ulong()) },
+							{ ntohs(peer->port()), ntohs(me->socket.local_endpoint().port()), ntohs(sizeof(udphdr) + bytes_transferred), 0 }
 						};
 						fp->write(reinterpret_cast<char*>(&e), sizeof(e));
 						fp->write(p->begin(), bytes_transferred);
