@@ -31,7 +31,7 @@ class Logger {
 
 		~Logger() {
 			data->completed = true;
-			for (;;) {
+			while (!q.empty()) {
 				auto &n = q.front();
 				if (!n->completed) break;
 				auto t = std::localtime(&n->t);
