@@ -134,7 +134,7 @@ class port : public std::enable_shared_from_this<port> {
 							fp = it->second;
 							if (size_t(fp->tellp()) + sizeof(pcap_hdr) + bytes_transferred > file_max_size) {
 								fp = me->rotate(*peer);
-								me->files.insert(it, decltype(me->files)::value_type(*peer, fp));
+								it->second = fp;
 							}
 						}
 						struct timeval tv;
