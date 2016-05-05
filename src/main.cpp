@@ -19,8 +19,8 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
-size_t const file_max_rotate = 10;
-size_t const file_max_size = 10*1024*1024;
+static size_t file_max_rotate;
+static size_t file_max_size;
 
 class port : public std::enable_shared_from_this<port> {
 	public:
@@ -134,7 +134,7 @@ class port : public std::enable_shared_from_this<port> {
 							me->files.insert(it, decltype(me->files)::value_type(*peer, fp));
 						} else {
 							fp = it->second;
-							if (size_t(fp->tellp()) + sizeof(pcap_hdr) + bytes_transferred > file_max_size) {
+							if (size_t(fp->tellp()) + sizeof(entry) + bytes_transferred > file_max_size) {
 								fp = me->rotate(*peer);
 								it->second = fp;
 							}
@@ -167,6 +167,8 @@ int main (int ac, char **av) {
 	("help,h", "print this message")
 	("directory,d", po::value<std::string>()->default_value("."), "destination directory (default: current directory)")
 	("listen,l", po::value<std::vector<std::string> >()->composing(), "listening ports")
+	("max_rotate,n", po::value<int>()->default_value(10), "max number of rotate file")
+	("max_size,s", po::value<int>()->default_value(10*1024*1024), "max size per file")
 	;
 
 	po::variables_map vm;
@@ -195,6 +197,9 @@ int main (int ac, char **av) {
 		std::cout << ex.what() << std::endl;
 		return 1;
 	}
+
+	file_max_rotate = vm["max_rotate"].as<int>();
+	file_max_size = vm["max_size"].as<int>();
 
 	boost::asio::io_service io_service;
 
