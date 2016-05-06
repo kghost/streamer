@@ -9,6 +9,7 @@
 #include <queue>
 #include <iostream>
 #include <iomanip>
+#include <syslog.h>
 
 #define BOOST_LOG_TRIVIAL(level) Logger("["#level"]")
 
@@ -34,10 +35,14 @@ class Logger {
 			while (!q.empty()) {
 				auto &n = q.front();
 				if (!n->completed) break;
-				auto t = std::localtime(&n->t);
-				char s[200];
-				::snprintf(s, sizeof(s), "%02d-%02d-%02d %02d/%02d/%02d %+04d", t->tm_year % 100, t->tm_mon, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, t->tm_isdst);
-				std::cerr << s << n->level << n->ss.str() << std::endl;
+				if (use_syslog) {
+					::syslog(LOG_INFO, "%s", n->ss.str().c_str());
+				} else {
+					auto t = std::localtime(&n->t);
+					char s[200];
+					::snprintf(s, sizeof(s), "%02d-%02d-%02d %02d/%02d/%02d %+04d", t->tm_year % 100, t->tm_mon, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, t->tm_isdst);
+					std::cerr << s << ' ' << n->level << ' ' << n->ss.str() << std::endl;
+				}
 				q.pop();
 			}
 		}
@@ -47,6 +52,8 @@ class Logger {
 			data->ss << std::forward<Arg>(arg);
 			return *this;
 		}
+
+		static bool use_syslog;
 
 	private:
 		static std::queue<std::shared_ptr<Data>> q;

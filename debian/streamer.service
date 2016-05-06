@@ -1,0 +1,10 @@
+[Unit]
+Description=Capture udp to pcap
+ConditionPathExists=/var/lib/streamer
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/streamer --directory /var/lib/streamer --listen 9678
+
+[Install]
+WantedBy=multi-user.target

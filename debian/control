@@ -1,15 +1,24 @@
-Source: steamer
+Source: streamer
 Section: utils
 Priority: extra
 Maintainer: Zang MingJie <zealot0630@gmail.com>
 Build-Depends: debhelper (>= 9.0.0), dh-autoreconf,
- autoconf-archive
+ autoconf-archive, pkg-config
 Standards-Version: 3.9.4
-Homepage: https://github.com/kghost/steamer
-Vcs-Git: git://github.com/kghost/steamer.git
+Homepage: https://github.com/kghost/streamer
+Vcs-Git: git://github.com/kghost/streamer.git
 
-Package: steamer
+Package: streamer
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: steamer
- steamer
+Description: streamer
+ streamer
+
+Package: streamer-dbg
+Architecture: any
+Section: debug
+Depends: streamer (= ${binary:Version}), ${misc:Depends}
+Description: debugging symbols for streamer
+ streamer
+ .
+ This package contains the debugging symbols for streamer.

@@ -9,7 +9,11 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #if defined(HAVE_BOOST_LOG)
+#define BOOST_LOG_USE_NATIVE_SYSLOG
+#include <boost/make_shared.hpp>
 #include <boost/log/trivial.hpp>
+#include <boost/log/sinks/syslog_backend.hpp>
+#include <boost/log/sinks/sync_frontend.hpp>
 #else
 #include "logger.hpp"
 #endif
@@ -165,6 +169,7 @@ int main (int ac, char **av) {
 	po::options_description desc("Options");
 	desc.add_options()
 	("help,h", "print this message")
+	("syslog", po::bool_switch()->default_value(false), "use syslog instead of stdout")
 	("directory,d", po::value<std::string>()->default_value("."), "destination directory (default: current directory)")
 	("listen,l", po::value<std::vector<std::string> >()->composing(), "listening ports")
 	("max_rotate,n", po::value<int>()->default_value(10), "max number of rotate file")
@@ -176,26 +181,37 @@ int main (int ac, char **av) {
 		po::store(po::command_line_parser(ac, av).options(desc).run(), vm);
 		po::notify(vm);
 	} catch (const po::error &ex) {
-		std::cout << ex.what() << std::endl;
+		std::cerr << ex.what() << std::endl;
 		return 1;
 	}
 
 	if (vm.count("help") || !vm.count("listen")) {
-		std::cout << "Usage: " << av[0] << " startlua" << std::endl;
-		std::cout << std::endl;
-		std::cout << desc << std::endl;
+		std::cerr << "Usage: " << av[0] << " startlua" << std::endl;
+		std::cerr << std::endl;
+		std::cerr << desc << std::endl;
 		return 1;
 	}
 
 	fs::path const working(vm["directory"].as<std::string>());
 	try {
 		if (!fs::exists(working) || !fs::is_directory(working)) {
-			std::cout << "can't open destination directory: " << working << std::endl;
+			std::cerr << "can't open destination directory: " << working << std::endl;
 			return 1;
 		}
 	} catch (const fs::filesystem_error& ex) {
-		std::cout << ex.what() << std::endl;
+		std::cerr << ex.what() << std::endl;
 		return 1;
+	}
+
+	if (vm["syslog"].as<bool>()) {
+#if defined(HAVE_BOOST_LOG)
+		boost::shared_ptr<boost::log::sinks::syslog_backend> backend(new boost::log::sinks::syslog_backend(
+				boost::log::keywords::facility = boost::log::sinks::syslog::user,
+				boost::log::keywords::use_impl = boost::log::sinks::syslog::native));
+		boost::log::core::get()->add_sink(boost::make_shared<boost::log::sinks::synchronous_sink<boost::log::sinks::syslog_backend> >(backend));
+#else
+		Logger::use_syslog = true;
+#endif
 	}
 
 	file_max_rotate = vm["max_rotate"].as<int>();
@@ -205,8 +221,18 @@ int main (int ac, char **av) {
 
 	boost::asio::signal_set signals(io_service, SIGINT, SIGTERM);
 	signals.async_wait([&io_service](const gh::error_code& ec, int signal_number) {
-		if (!ec)
-			io_service.stop();
+		if (!ec) {
+			switch (signal_number) {
+				case SIGINT:
+				case SIGTERM:
+					io_service.stop();
+					break;
+				case SIGHUP:
+					break;
+			}
+		} else {
+			BOOST_LOG_TRIVIAL(error) << "Sighandler error: " << ec.message();
+		}
 	});
 
 	auto resolver = std::make_shared<boost::asio::ip::udp::resolver>(io_service);
