@@ -30,4 +30,4 @@ Makefile.in
 /missing
 /stamp-h1
 
-/src/streamer
+/src/udpcap

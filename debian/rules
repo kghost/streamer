@@ -6,4 +6,4 @@
 
 .PHONY: override_dh_strip
 override_dh_strip:
-	dh_strip --dbg-package=streamer-dbg
+	dh_strip --dbg-package=udpcap-dbg

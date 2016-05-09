@@ -1,0 +1,10 @@
+[Unit]
+Description=Capture udp to pcap
+ConditionPathExists=/var/lib/udpcap
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/udpcap --directory /var/lib/udpcap --listen 9678
+
+[Install]
+WantedBy=multi-user.target

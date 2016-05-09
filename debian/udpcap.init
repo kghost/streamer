@@ -1,6 +1,6 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          streamer
+# Provides:          udpcap
 # Required-Start:    $local_fs $remote_fs $network $syslog $named
 # Required-Stop:     $local_fs $remote_fs $network $syslog $named
 # Default-Start:     2 3 4 5
@@ -14,11 +14,11 @@
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="streamer"
-NAME=streamer
+DESC="udpcap"
+NAME=udpcap
 
-DAEMON=/usr/bin/streamer
-PIDFILE=/var/run/streamer.pid
+DAEMON=/usr/bin/udpcap
+PIDFILE=/var/run/udpcap.pid
 
 SCRIPTNAME=/etc/init.d/$NAME
 
