@@ -33,12 +33,12 @@ SCRIPTNAME=/etc/init.d/$NAME
 
 do_start()
 {
-	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON -- --syslog
+	start-stop-daemon --start --quiet --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON -- --syslog --listen 9678
 }
 
 do_stop()
 {
-	start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE --exec $DAEMON
+	start-stop-daemon --stop --quiet --remove-pidfile --retry=TERM/30/KILL/5 --pidfile $PIDFILE --exec $DAEMON
 }
 
 case "$1" in
