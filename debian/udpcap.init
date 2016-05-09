@@ -33,7 +33,7 @@ SCRIPTNAME=/etc/init.d/$NAME
 
 do_start()
 {
-	start-stop-daemon --start --quiet --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON -- --syslog --listen 9678
+	start-stop-daemon --start --quiet --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON -- --syslog --listen 9678 --directory /var/lib/udpcap
 }
 
 do_stop()
