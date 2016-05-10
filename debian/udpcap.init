@@ -16,11 +16,19 @@
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="udpcap"
 NAME=udpcap
+DEFAULTS="/etc/default/udpcap"
 
 DAEMON=/usr/bin/udpcap
 PIDFILE=/var/run/udpcap.pid
 
 SCRIPTNAME=/etc/init.d/$NAME
+
+PORT=9678
+# Include acpid defaults if available
+[ -r "$DEFAULTS" ] && . "$DEFAULTS"
+
+# Get lsb functions
+. /lib/lsb/init-functions
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
@@ -33,7 +41,7 @@ SCRIPTNAME=/etc/init.d/$NAME
 
 do_start()
 {
-	start-stop-daemon --start --quiet --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON -- --syslog --listen 9678 --directory /var/lib/udpcap
+	start-stop-daemon --start --quiet --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON -- --syslog --listen $PORT --directory /var/lib/udpcap
 }
 
 do_stop()
