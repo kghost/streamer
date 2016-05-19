@@ -24,6 +24,8 @@ PIDFILE=/var/run/udpcap.pid
 SCRIPTNAME=/etc/init.d/$NAME
 
 PORT=9678
+DIRECTORY=/var/lib/udpcap
+
 # Include acpid defaults if available
 [ -r "$DEFAULTS" ] && . "$DEFAULTS"
 
@@ -41,7 +43,7 @@ PORT=9678
 
 do_start()
 {
-	start-stop-daemon --start --quiet --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON -- --syslog --listen $PORT --directory /var/lib/udpcap
+	start-stop-daemon --start --quiet --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON -- --syslog --listen "$PORT" --directory "$DIRECTORY"
 }
 
 do_stop()
